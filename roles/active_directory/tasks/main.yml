@@ -1,0 +1,67 @@
+---
+# tasks file for active_directory
+- name: Load AD admin credentials
+  include_vars: credentials.yml
+
+- name: Allow passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: "^%sudo"
+    line: "%sudo ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+
+- name: Set a hostname
+  ansible.builtin.hostname:
+    name: "{{ ansible_hostname }}.druid.ml"
+
+- name: Update repositories and install packages on ubuntu
+  ansible.builtin.apt:
+    pkg:
+    - realmd
+    - libnss-sss
+    - libpam-sss
+    - sssd
+    - sssd-tools
+    - adcli
+    - samba-common-bin
+    - oddjob
+    - oddjob-mkhomedir
+    - packagekit
+    update_cache: yes
+    state: latest
+
+- name: Check if VM is joined to AD
+  ansible.builtin.shell: realm list | grep -c "{{ AD_Domain }}" || exit 0
+  register: joined_status
+  
+- name: Print result
+  ansible.builtin.debug:
+    verbosity: 1
+    msg: Output - "{{ joined_status }}"
+  
+- name: Joining the AD realm 
+  ansible.builtin.shell: echo "{{ password }}" | realm join -U "{{ username }}" "{{ AD_Domain }}"  && pam-auth-update --enable mkhomedir
+  when: joined_status.stdout == "0"
+
+- name: Use sssd.conf template
+  ansible.builtin.template:
+    src: sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    mode: "0600"
+  when: joined_status.stdout == "0"
+  notify: Restarting SSSD
+
+- name: Grant sudo privileges to AD groups
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/sudo_groups
+    line: "%{{ item }} ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+    create: yes
+  loop: "{{ sudo_groups }}"
+  notify: Restarting SSSD
+
+- name: Add users to sudo group
+  ansible.builtin.shell: usermod -aG sudo "{{ item }}"
+  loop: "{{ sudo_users }}"
+  notify: Restarting SSSD

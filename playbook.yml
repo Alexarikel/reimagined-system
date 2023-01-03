@@ -1,0 +1,13 @@
+---
+- name: Add to Active Directory DC
+  hosts: all
+  become: true
+
+  roles:
+    - active_directory
+
+  vars:
+    AD_Domain: druid.ml
+    Join_OU: CN=Computers,DC=druid,DC=ml
+    username: "{{ ad_admin_username }}"
+    password: "{{ ad_admin_password }}"

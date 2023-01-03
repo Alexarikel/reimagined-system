@@ -1,0 +1,7 @@
+---
+# handlers file for active_directory
+- name: Restarting SSSD
+  systemd:
+    name: sssd
+    enabled: yes
+    state: restarted
