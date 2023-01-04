@@ -15,13 +15,11 @@ provider "vsphere" {
   allow_unverified_ssl = true
 }
 
-variable "user" {
-}
+variable "user" {}
 variable "password" {
+  sensitive   = true
+  type = string
 }
-variable "vsphere_server" {
-}
-variable "ssh_user" {
-}
-variable "ssh_key" {
-}
+variable "vsphere_server" {}
+variable "ssh_user" {}
+

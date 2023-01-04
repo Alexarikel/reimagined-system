@@ -1,9 +1,7 @@
-variable "ssh_user" {
-  default = "alexa"
+locals {
+  ssh_key = "/home/${var.ssh_user}/.ssh/id_rsa"
 }
-variable "ssh_key" {
-  default = "/home/alexa/.ssh/id_rsa"
-}
+
 
 data "vsphere_network" "network" {
   name          = var.network
@@ -29,10 +27,6 @@ data "vsphere_virtual_machine" "template" {
   datacenter_id = data.vsphere_datacenter.datacenter.id
 }
 
-locals {
-  ssh_user = var.ssh_user
-}
-
 resource "vsphere_virtual_machine" "vm" {
   name             = var.vm_name
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
@@ -45,7 +39,7 @@ resource "vsphere_virtual_machine" "vm" {
   }
   disk {
     label = "disk0"
-    size  = data.vsphere_virtual_machine.template.disks.0.size
+    size  = var.disk_size
     thin_provisioned = data.vsphere_virtual_machine.template.disks.0.thin_provisioned
   }
   clone {
@@ -69,11 +63,11 @@ resource "vsphere_virtual_machine" "vm" {
     connection {
       type        = "ssh"
       user        = var.ssh_user
-      private_key = file(var.ssh_key)
+      private_key = file(local.ssh_key)
       host        = self.clone[0].customize[0].network_interface[0].ipv4_address
     }
   }
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook  -i ${self.clone[0].customize[0].network_interface[0].ipv4_address}, --private-key ${var.ssh_key} ../playbook.yml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook  -i ${self.clone[0].customize[0].network_interface[0].ipv4_address}, --private-key ${local.ssh_key} ../playbook.yml"
   }
 }

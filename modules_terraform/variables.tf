@@ -1,3 +1,8 @@
+variable "ssh_user" { 
+  description = "Username in the template with Sudo permissions"
+  default = "alexa"
+}
+
 variable "datacenter" { 
   description = "Datacenter name in vCenter"
   default = "Datacenter"

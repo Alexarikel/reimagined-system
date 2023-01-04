@@ -13,7 +13,7 @@
 
 - name: Set a hostname
   ansible.builtin.hostname:
-    name: "{{ ansible_hostname }}.druid.ml"
+    name: "{{ ansible_hostname }}.{{ AD_Domain }}"
 
 - name: Update repositories and install packages on ubuntu
   ansible.builtin.apt:
@@ -52,6 +52,11 @@
   when: joined_status.stdout == "0"
   notify: Restarting SSSD
 
+- name: Set simple_allow_groups
+  ansible.builtin.shell: realm permit -g "{{ item }}"
+  loop: "{{ sudo_groups }}"
+  notify: Restarting SSSD
+
 - name: Grant sudo privileges to AD groups
   ansible.builtin.lineinfile:
     path: /etc/sudoers.d/sudo_groups
@@ -65,3 +70,7 @@
   ansible.builtin.shell: usermod -aG sudo "{{ item }}"
   loop: "{{ sudo_users }}"
   notify: Restarting SSSD
+
+- name: Resize vsphere virtual disk
+  ansible.builtin.shell: growpart /dev/sda 3; pvresize /dev/sda3 && lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv; resize2fs /dev/ubuntu-vg/ubuntu-lv || exit 0
+  

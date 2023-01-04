@@ -1,7 +1,7 @@
 module "vm1" {
   source = "../modules_terraform/"
   vm_name = "k8s1"
-  disk_size = 40
+  disk_size = 70
   vm_ip = "192.168.5.40"
   vm_cidr = 24
   default_gw = "192.168.5.254"
@@ -14,7 +14,7 @@ module "vm1" {
 module "vm2" {
   source = "../modules_terraform/"
   vm_name = "k8s2"
-  disk_size = 40
+  disk_size = 60
   vm_ip = "192.168.5.41"
   vm_cidr = 24
   default_gw = "192.168.5.254"
