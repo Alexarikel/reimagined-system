@@ -3,10 +3,8 @@ Create virtual machines and join them to Active Directory Domain using Terraform
 
 ## Requirement
 Before launching ***terraform apply***, you must set parametres in following files:<br/><br/>
-vSphere authentification params in **terraform.tfvars**:
+Specify vSphere server in **terraform.tfvars**:
 ```
-user           = "username"
-password       = "secret"
 vsphere_server = "my-vcenter-or-esxi-dnsname (ex: xxx.xxx.xxx.xxx)"
 ```
 Active Directory authentification params in **credentials.yml**:
@@ -19,6 +17,7 @@ sudo_groups: [<List of AD groups with sudo permissions>]
 sudo_users: [<List of AD users with sudo permissions>]
 ```
 Update castomization params in **instances.tf** file<br/><br/>
+Run **input_creds.sh** script for vSphere authentification<br/><br/>
 ## Getting Started
 Before running Terraform operations, download plugins using the ***terraform init*** command:
 ```
