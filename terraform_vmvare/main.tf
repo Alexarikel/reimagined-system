@@ -8,18 +8,16 @@ terraform {
 }
 
 provider "vsphere" {
-  user           = var.user
+  user           = var.username
   password       = var.password
   vsphere_server = var.vsphere_server
 
   allow_unverified_ssl = true
 }
 
-variable "user" {}
+variable "username" {}
 variable "password" {
   sensitive   = true
   type = string
 }
 variable "vsphere_server" {}
-variable "ssh_user" {}
-
